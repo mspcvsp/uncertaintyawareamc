@@ -141,21 +141,21 @@ class AutoModClassifier(pl.LightningModule):
             kwargs.get("lr", 1E-3)
 
         self.iq_embed = IQDataEmbedder()
-        self.modclf = FrequentistClassifier()
+        self.modclf = FrequentistClassifier(**kwargs)
 
         self.loss = nn.CrossEntropyLoss()
 
         self.train_accuracy =\
             tm.Accuracy(task="multiclass",
-                        num_classes=self.num_classes)
+                        num_classes=self.modclf.num_classes)
 
         self.val_accuracy =\
             tm.Accuracy(task="multiclass",
-                        num_classes=self.num_classes)
+                        num_classes=self.modclf.num_classes)
 
         self.test_accuracy =\
             tm.Accuracy(task="multiclass",
-                        num_classes=self.num_classes)
+                        num_classes=self.modclf.num_classes)
 
         self.softmax = nn.Softmax(dim=1)
 

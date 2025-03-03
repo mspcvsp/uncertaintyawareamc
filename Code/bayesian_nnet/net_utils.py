@@ -5,9 +5,7 @@ import os
 from pathlib import Path
 import torch.nn as nn
 import torch.nn.init as init
-from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
-from lightning.pytorch.loggers import MLFlowLogger
-from lightning.pytorch.callbacks.early_stopping import EarlyStopping
+import lightning as pl
 
 
 def init_weights(m):
@@ -118,21 +116,24 @@ def initialize_pl_trainer(net_arch_id,
     mlflow_tracking_uri = kwargs.get("mlflow_tracking_uri",
                                      get_mlflow_tracking_uri())
 
-    checkpoint_callback = ModelCheckpoint(
-        dirpath=get_model_checkpoint_dir(net_arch_id,
-                                         **kwargs),
-        filename='{epoch}-{val_loss:.2f}-{other_metric:.2f}')
+    checkpoint_callback =\
+        pl.pytorch.callbacks.model_checkpoint.ModelCheckpoint(
+            dirpath=get_model_checkpoint_dir(net_arch_id,
+                                             **kwargs),
+            filename='{epoch}-{val_loss:.2f}-{other_metric:.2f}')
 
     mlf_logger =\
-        MLFlowLogger(experiment_name=net_arch_id,
-                     tracking_uri=f"file:{mlflow_tracking_uri}")
+        pl.pytorch.loggers.MLFlowLogger(\
+            experiment_name=net_arch_id,
+            tracking_uri=f"file:{mlflow_tracking_uri}")
 
     early_stop_callback =\
-        EarlyStopping(monitor="val_acc",
-                      min_delta=min_delta,
-                      patience=patience,
-                      verbose=False,
-                      mode="max")
+        pl.pytorch.callbacks.model_checkpoint.EarlyStopping(\
+            monitor="val_acc",
+            min_delta=min_delta,
+            patience=patience,
+            verbose=False,
+            mode="max")
 
     callbacks = [checkpoint_callback,
                  early_stop_callback]

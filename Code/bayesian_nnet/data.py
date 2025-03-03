@@ -57,10 +57,13 @@ def load_data_tags(**kwargs) -> pd.DataFrame:
             polars.col("modesnr").str.replace_all('-', 'minus', literal=True)
         )
 
-    return data_tags.to_pandas()
+    data_tags = data_tags.to_pandas() 
+
+    return data_tags.set_index("idx")
 
 
 def initialize_data_split_idx(data_tags,
+                              out_of_distrib_modes,
                               **kwargs):
     """
     Initializes training, validation, & test data split indexing.
@@ -96,11 +99,20 @@ def initialize_data_split_idx(data_tags,
 
     data_split_idx = {}
 
-    data_split_idx["train"], data_split_idx["test"] =\
-        train_test_split(data_tags["idx"].values,
+    train_idx, data_split_idx["test"] =\
+        train_test_split(data_tags.index,
                          train_size=train_size,
                          random_state=random_state0)
-
+    
+    h_in_distrib =\
+        lambda elem: elem not in set(out_of_distrib_modes)
+    
+    train_data = data_tags.iloc[train_idx].copy()
+    select_row = train_data["mode"].apply(h_in_distrib)
+    
+    data_split_idx["train"] =\
+        train_data.loc[select_row, :].index
+    
     data_split_idx["train"], data_split_idx["validation"] =\
         train_test_split(data_split_idx["train"],
                          train_size=train_size,
@@ -186,7 +198,8 @@ def get_datasplit_data_tags_path(datasplit,
     return data_dir.joinpath(f"{datasplit}_data_tags.csv")
 
 
-def initialize_data_splits(**kwargs):
+def initialize_data_splits(out_of_distrib_modes,
+                           **kwargs):
     """
     Initializes data split data *.npy and data tags *.csv files
 
@@ -207,10 +220,13 @@ def initialize_data_splits(**kwargs):
 
         data_tags = load_data_tags(**kwargs)
 
-        data_split_idx = initialize_data_split_idx(data_tags)
+        data_split_idx =\
+            initialize_data_split_idx(data_tags,
+                                      out_of_distrib_modes)
 
         init_datasplit_data_tags(data_tags,
                                  data_split_idx,
+                                 out_of_distrib_modes,
                                  **kwargs)
 
         data_dir = get_data_dir(**kwargs)
@@ -232,6 +248,7 @@ def initialize_data_splits(**kwargs):
 
 def init_datasplit_data_tags(data_tags,
                              data_split_idx,
+                             out_of_distrib_modes,
                              **kwargs):
     """
     Initializes a data tags *.csv file for the training, validation & test
@@ -257,7 +274,9 @@ def init_datasplit_data_tags(data_tags,
     -------
     None
     """
-    for cur_split in data_split_idx.keys():
+    for cur_split in ["train",
+                      "validation",
+                      "test"]:
 
         cur_idx = data_split_idx[cur_split]
 
@@ -282,8 +301,12 @@ def init_datasplit_data_tags(data_tags,
             mode_ordenc = OrdinalEncoder()
             snr_ordenc = OrdinalEncoder()
 
+            cur_split_modeid =\
+                np.concat([cur_split_modeid,
+                           np.array(out_of_distrib_modes).reshape(-1, 1)])
+
             datasplit_data_tags["modeordenc"] =\
-                mode_ordenc.fit_transform(cur_split_modeid)
+                mode_ordenc.fit_transform(cur_split_modeid)[:-2]
 
             datasplit_data_tags["snrordenc"] =\
                 snr_ordenc.fit_transform(cur_split_snrid)
@@ -296,9 +319,9 @@ def init_datasplit_data_tags(data_tags,
             datasplit_data_tags["snrordenc"] =\
                 snr_ordenc.transform(cur_split_snrid)
 
-        datasplit_data_tags.to_csv(get_datasplit_data_tags_path(cur_split,
-                                                                **kwargs),
-                                   index=False)
+    datasplit_data_tags.to_csv(get_datasplit_data_tags_path(cur_split,
+                                                            **kwargs),
+                               index=False)
 
     data_dir = get_data_dir(**kwargs)
 
