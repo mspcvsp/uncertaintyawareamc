@@ -9,7 +9,7 @@ IEEE Internet of Things Journal, vol. 11, no. 13, pp. 24300-24309,
 1 July 1, 2024, doi: 10.1109/JIOT.2024.3390038.
 """
 import numpy as np
-import lightning as pl
+import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.optim as optim

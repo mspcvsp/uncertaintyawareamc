@@ -7,7 +7,7 @@ import numpy as np
 from numpy.random import Generator, MT19937, SeedSequence
 from sklearn.preprocessing import OrdinalEncoder
 from pathlib import Path
-import lightning as pl
+import pytorch_lightning as pl
 import polars
 import pandas as pd
 from sklearn.model_selection import train_test_split
