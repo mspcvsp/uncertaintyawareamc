@@ -319,9 +319,9 @@ def init_datasplit_data_tags(data_tags,
             datasplit_data_tags["snrordenc"] =\
                 snr_ordenc.transform(cur_split_snrid)
 
-    datasplit_data_tags.to_csv(get_datasplit_data_tags_path(cur_split,
-                                                            **kwargs),
-                               index=False)
+        datasplit_data_tags.to_csv(get_datasplit_data_tags_path(cur_split,
+                                                                **kwargs),
+                                   index=False)
 
     data_dir = get_data_dir(**kwargs)
 

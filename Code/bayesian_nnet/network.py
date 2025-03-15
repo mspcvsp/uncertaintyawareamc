@@ -185,7 +185,7 @@ class AutoModClassifier(pl.LightningModule):
             predicted classes for each network input
         """
         layer_out = self.iq_embed(x)
-        net_output = self.linear_layers(layer_out)
+        net_output = self.modclf(layer_out)
 
         if applySoftmax:
             net_output = self.softmax(net_output)
