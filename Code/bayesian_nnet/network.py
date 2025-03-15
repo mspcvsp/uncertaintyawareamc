@@ -42,7 +42,7 @@ class IQDataEmbedder(nn.Module):
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
                              padding=1))
-
+        
         """
         Layer #2
         ---------
@@ -61,7 +61,7 @@ class IQDataEmbedder(nn.Module):
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
                              padding=1))
-
+        
         """
         Layer #3
         ---------
@@ -72,17 +72,36 @@ class IQDataEmbedder(nn.Module):
         self.conv3 =\
             nn.Sequential(
                 nn.Conv1d(in_channels=64,
-                          out_channels=64,
+                          out_channels=128,
                           kernel_size=3,
                           padding=1),
-                nn.BatchNorm1d(64),
+                nn.BatchNorm1d(128),
+                nn.ReLU(),
+                nn.MaxPool1d(kernel_size=3,
+                             stride=2,
+                             padding=1))
+        
+        """
+        Layer #4
+        ---------
+        conv 3, 128
+        ReLU
+        max pool / 2
+        """
+        self.conv4 =\
+            nn.Sequential(
+                nn.Conv1d(in_channels=128,
+                          out_channels=128,
+                          kernel_size=3,
+                          padding=1),
+                nn.BatchNorm1d(128),
                 nn.ReLU(),
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
                              padding=1))
 
-        self.lstm = nn.LSTM(64,
-                            32,
+        self.lstm = nn.LSTM(128,
+                            64,
                             num_layers=2,
                             batch_first=True)
 
@@ -94,6 +113,8 @@ class IQDataEmbedder(nn.Module):
         layer_out = self.conv1(x)
         layer_out = self.conv2(layer_out)
         layer_out = self.conv3(layer_out)
+        layer_out = self.conv4(layer_out)
+
         layer_out = torch.permute(layer_out, (0, 2, 1))
         layer_out, _ = self.lstm(layer_out)
         layer_out = torch.permute(layer_out, (0, 2, 1))
@@ -111,11 +132,11 @@ class FrequentistClassifier(nn.Module):
         self.num_classes = kwargs.get("num_classes", 18)
 
         self.fc_layers =\
-            nn.Sequential(nn.Linear(8192, 256),
-                          nn.Dropout(0.6),
-                          nn.BatchNorm1d(256),
+            nn.Sequential(nn.Linear(8192, 1024),
+                          nn.Dropout(0.5),
+                          nn.BatchNorm1d(1024),
                           nn.ReLU(),
-                          nn.Linear(256, 18))
+                          nn.Linear(1024, 18))
 
         self.apply(init_weights)
 
