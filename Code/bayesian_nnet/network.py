@@ -401,7 +401,7 @@ class AutoModClassifier(pl.LightningModule):
         Tensor that stores target predicted class confidence (for the cross
         entropy loss) given a batch's ordinal encoded modulation mode
         """
-        shape2d = [len(modeordenc), self.num_classes]
+        shape2d = [len(modeordenc), self.modclf.num_classes]
 
         linear_idx =\
             np.ravel_multi_index([np.arange(len(modeordenc)),
