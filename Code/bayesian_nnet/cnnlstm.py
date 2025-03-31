@@ -42,7 +42,7 @@ class IQDataEmbedder(nn.Module):
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
                              padding=1))
-        
+
         """
         Layer #2
         ---------
@@ -61,7 +61,7 @@ class IQDataEmbedder(nn.Module):
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
                              padding=1))
-        
+
         """
         Layer #3
         ---------
@@ -80,7 +80,7 @@ class IQDataEmbedder(nn.Module):
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
                              padding=1))
-        
+
         """
         Layer #4
         ---------
@@ -100,8 +100,47 @@ class IQDataEmbedder(nn.Module):
                              stride=2,
                              padding=1))
 
-        self.lstm = nn.LSTM(128,
-                            64,
+        """
+        Layer #5
+        ---------
+        conv 3, 256
+        ReLU
+        max pool / 2
+        """
+        self.conv5 =\
+            nn.Sequential(
+                nn.Conv1d(in_channels=128,
+                          out_channels=256,
+                          kernel_size=3,
+                          padding=1),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+                nn.MaxPool1d(kernel_size=3,
+                             stride=2,
+                             padding=1))
+
+        """
+        Layer #6
+        ---------
+        conv 3, 256
+        ReLU
+        max pool / 2
+        """
+        self.conv6 =\
+            nn.Sequential(
+                nn.Conv1d(in_channels=256,
+                          out_channels=256,
+                          kernel_size=3,
+                          padding=1),
+                nn.BatchNorm1d(256),
+                nn.ReLU(),
+                nn.MaxPool1d(kernel_size=3,
+                             stride=2,
+                             padding=1),
+                nn.Dropout1d(0.6, inplace=True))
+
+        self.lstm = nn.LSTM(input_size=256,
+                            hidden_size=64,
                             num_layers=2,
                             batch_first=True)
 
@@ -114,6 +153,8 @@ class IQDataEmbedder(nn.Module):
         layer_out = self.conv2(layer_out)
         layer_out = self.conv3(layer_out)
         layer_out = self.conv4(layer_out)
+        layer_out = self.conv5(layer_out)
+        layer_out = self.conv6(layer_out)
 
         layer_out = torch.permute(layer_out, (0, 2, 1))
         layer_out, _ = self.lstm(layer_out)
@@ -132,15 +173,11 @@ class FrequentistClassifier(nn.Module):
         self.num_classes = kwargs.get("num_classes", 18)
 
         self.fc_layers =\
-            nn.Sequential(nn.Linear(8192, 2048),
-                              nn.Dropout(0.5),
-                              nn.BatchNorm1d(2048),
-                              nn.ReLU(),
-                              nn.Linear(2048, 512),
-                              nn.Dropout(0.5),
-                              nn.BatchNorm1d(512),
-                              nn.ReLU(),
-                              nn.Linear(512, 18))
+            nn.Sequential(nn.Linear(2048, 128),
+                          nn.Dropout(0.5),
+                          nn.BatchNorm1d(128),
+                          nn.ReLU(),
+                          nn.Linear(128, 18))
 
         self.apply(init_weights)
 

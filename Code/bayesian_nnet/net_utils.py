@@ -113,7 +113,7 @@ def initialize_pl_trainer(net_arch_id,
         MLFlow logger class object
     """
     patience = kwargs.get("patience", 5)
-    min_delta = kwargs.get("min_delta", 0.01)
+    min_delta = kwargs.get("min_delta", 0.001)
 
     mlflow_tracking_uri = kwargs.get("mlflow_tracking_uri",
                                      get_mlflow_tracking_uri())

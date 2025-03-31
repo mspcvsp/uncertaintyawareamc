@@ -6,64 +6,9 @@ import numpy as np
 import pandas as pd
 import lightning as pl
 from sklearn.metrics import classification_report, confusion_matrix
-from .ccnn import ClassicalCNN
-from .deepcnn import DeepCNN
-from .resnet import ResidualNetwork
-from .allconvnet import AllConvNet
 from .data import get_data_dir, IQDataModel
 from .net_utils import get_model_checkpoint_dir, parse_snrid
 from .net_utils import get_ordenc_intid_lut
-
-
-def evaluate_model_performance(modelid_checkpoint_map,
-                               **kwargs):
-    """
-    Evaluates the performance of a set of trained deep learning models
-
-    Parameters
-    ----------
-    modelid_checkpoint_map: dict
-        Map of network architecture identifiers to the corresponding model
-        checkpoint files
-
-    kwargs: dict
-        Optional parameters
-    """
-    trainer = pl.Trainer()
-    datamodule = IQDataModel(**kwargs)
-    snrid_acc = []
-
-    for modelid in modelid_checkpoint_map.keys():
-
-        model_checkpoint_pth = get_model_checkpoint_dir(modelid)
-        checkpoint_file = modelid_checkpoint_map[modelid]
-
-        model_checkpoint_pth =\
-            model_checkpoint_pth.joinpath(checkpoint_file)
-
-        if modelid == "classical-cnn":
-            model = ClassicalCNN.load_from_checkpoint(model_checkpoint_pth)
-        # -----------------------------------------
-        elif modelid == "all-conv-net":
-            model = AllConvNet.load_from_checkpoint(model_checkpoint_pth)
-        # -----------------------------------------
-        elif modelid == "deep-cnn":
-            model = DeepCNN.load_from_checkpoint(model_checkpoint_pth)
-        # -----------------------------------------
-        elif modelid == "resnet":
-            model = ResidualNetwork.load_from_checkpoint(model_checkpoint_pth)
-
-        predictions = trainer.predict(model,
-                                      datamodule=datamodule)
-
-        snrid_clf_report, _ =\
-            evaluate_model_predictions(predictions)
-
-        model_snrid_acc = init_snrid_accuracy(snrid_clf_report)
-        model_snrid_acc["modelid"] = modelid
-        snrid_acc.append(model_snrid_acc)
-
-    return pd.concat(snrid_acc)
 
 
 def init_snrid_accuracy(snrid_clf_report):

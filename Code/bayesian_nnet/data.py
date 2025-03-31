@@ -103,16 +103,16 @@ def initialize_data_split_idx(data_tags,
         train_test_split(data_tags.index,
                          train_size=train_size,
                          random_state=random_state0)
-    
+
     h_in_distrib =\
         lambda elem: elem not in set(out_of_distrib_modes)
-    
+
     train_data = data_tags.iloc[train_idx].copy()
     select_row = train_data["mode"].apply(h_in_distrib)
-    
+
     data_split_idx["train"] =\
         train_data.loc[select_row, :].index
-    
+
     data_split_idx["train"], data_split_idx["validation"] =\
         train_test_split(data_split_idx["train"],
                          train_size=train_size,
