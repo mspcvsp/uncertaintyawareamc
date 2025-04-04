@@ -1,6 +1,7 @@
 """
 Deep learning algorithm utility functions
 """
+import inspect
 import os
 from pathlib import Path
 import torch.nn as nn
@@ -61,11 +62,10 @@ def get_model_checkpoint_dir(net_arch_id,
     data_dir: str
         Full path to the top-level model checkpoint directory name
     """
-    path_elems = ["/home",
-                  os.getenv("USER"),
-                  "panoradio_hf",
-                  kwargs.get("model_checkpoint_dir", "ModelCheckpoints"),
-                  net_arch_id]
+    path_elems = list(Path(inspect.getfile(inspect.currentframe())).parts)[:-3]
+
+    path_elems.extend([kwargs.get("model_checkpoint_dir", "ModelCheckpoints"),
+                       net_arch_id])
 
     return Path(*path_elems)
 

@@ -298,15 +298,23 @@ def init_datasplit_data_tags(data_tags,
 
         if cur_split == "train":
 
-            mode_ordenc = OrdinalEncoder()
+            categories =\
+                pd.Series(cur_split_modeid.flatten()).value_counts().keys()
+
+            categories = list(categories)
+            categories.extend(out_of_distrib_modes)
+
+            mode_ordenc = OrdinalEncoder(categories=[categories])
             snr_ordenc = OrdinalEncoder()
 
             cur_split_modeid =\
                 np.concat([cur_split_modeid,
                            np.array(out_of_distrib_modes).reshape(-1, 1)])
 
+            num_to_skip = len(out_of_distrib_modes)
+
             datasplit_data_tags["modeordenc"] =\
-                mode_ordenc.fit_transform(cur_split_modeid)[:-2]
+                mode_ordenc.fit_transform(cur_split_modeid)[:-num_to_skip]
 
             datasplit_data_tags["snrordenc"] =\
                 snr_ordenc.fit_transform(cur_split_snrid)

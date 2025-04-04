@@ -8,6 +8,7 @@ Automatic Modulation Classification With Bayesian Neural Network," in
 IEEE Internet of Things Journal, vol. 11, no. 13, pp. 24300-24309,
 1 July 1, 2024, doi: 10.1109/JIOT.2024.3390038.
 """
+import pandas as pd
 import numpy as np
 import pytorch_lightning as pl
 import torch
@@ -15,6 +16,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchmetrics as tm
 from .net_utils import init_weights
+from .data import get_data_dir
 
 
 class IQDataEmbedder(nn.Module):
@@ -41,7 +43,8 @@ class IQDataEmbedder(nn.Module):
                 nn.ReLU(),
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
-                             padding=1))
+                             padding=1),
+                nn.Dropout1d(0.1, inplace=True))
 
         """
         Layer #2
@@ -60,7 +63,8 @@ class IQDataEmbedder(nn.Module):
                 nn.ReLU(),
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
-                             padding=1))
+                             padding=1),
+                nn.Dropout1d(0.1, inplace=True))
 
         """
         Layer #3
@@ -79,7 +83,8 @@ class IQDataEmbedder(nn.Module):
                 nn.ReLU(),
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
-                             padding=1))
+                             padding=1),
+                nn.Dropout1d(0.1, inplace=True))
 
         """
         Layer #4
@@ -98,7 +103,8 @@ class IQDataEmbedder(nn.Module):
                 nn.ReLU(),
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
-                             padding=1))
+                             padding=1),
+                nn.Dropout1d(0.1, inplace=True))
 
         """
         Layer #5
@@ -117,7 +123,8 @@ class IQDataEmbedder(nn.Module):
                 nn.ReLU(),
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
-                             padding=1))
+                             padding=1),
+                nn.Dropout1d(0.1, inplace=True))
 
         """
         Layer #6
@@ -137,10 +144,10 @@ class IQDataEmbedder(nn.Module):
                 nn.MaxPool1d(kernel_size=3,
                              stride=2,
                              padding=1),
-                nn.Dropout1d(0.6, inplace=True))
+                nn.Dropout1d(0.1, inplace=True))
 
         self.lstm = nn.LSTM(input_size=256,
-                            hidden_size=64,
+                            hidden_size=128,
                             num_layers=2,
                             batch_first=True)
 
@@ -165,19 +172,21 @@ class IQDataEmbedder(nn.Module):
 
 class FrequentistClassifier(nn.Module):
 
-    def __init__(self,
-                 **kwargs):
+    def __init__(self):
 
         super().__init__()
 
-        self.num_classes = kwargs.get("num_classes", 18)
+        train_data_tags =\
+            pd.read_csv(get_data_dir().joinpath("train_data_tags.csv"))
+        
+        self.num_classes = len(train_data_tags["modeordenc"].unique())
 
         self.fc_layers =\
-            nn.Sequential(nn.Linear(2048, 128),
+            nn.Sequential(nn.Linear(4096, 128),
                           nn.Dropout(0.5),
                           nn.BatchNorm1d(128),
                           nn.ReLU(),
-                          nn.Linear(128, 18))
+                          nn.Linear(128, self.num_classes))
 
         self.apply(init_weights)
 
