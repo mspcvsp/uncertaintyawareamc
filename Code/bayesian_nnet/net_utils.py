@@ -207,3 +207,29 @@ def compute_conv1d_lout(l_in,
     l_out = l_in + 2 * padding - dilation * (kernel_size - 1) - 1
     l_out = l_out / stride + 1
     return int(l_out)
+
+
+class ModelCheckpoint(object):
+
+    def __init__(self,
+                 net_arch_id,
+                 checkpoint_file):
+
+        checkpoint_pth =\
+            get_model_checkpoint_dir(net_arch_id).joinpath(checkpoint_file)
+
+        self.model_checkpoint = torch.load(checkpoint_pth)
+
+    def get_subnet_state_dict(self,
+                              subnet_id):
+
+        state_dict = OrderedDict()
+
+        for key in self.model_checkpoint["state_dict"].keys():
+
+            if subnet_id in key:
+
+                state_dict[key.replace(subnet_id + ".", "")] =\
+                    self.model_checkpoint["state_dict"][key]
+
+        return state_dict
