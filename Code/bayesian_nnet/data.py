@@ -337,6 +337,15 @@ def init_datasplit_data_tags(data_tags,
     jl.dump(snr_ordenc, data_dir.joinpath("snrordenc.jl"))
 
 
+def get_num_clases():
+    """
+    """
+    train_data_tags =\
+        pd.read_csv(get_data_dir().joinpath("train_data_tags.csv"))
+
+    return len(train_data_tags["modeordenc"].unique())
+
+
 def init_snrid(row):
     """
     Returns a string that refers to a specific Signal-to-Noise (SNR) level

@@ -176,10 +176,7 @@ class FrequentistClassifier(nn.Module):
 
         super().__init__()
 
-        train_data_tags =\
-            pd.read_csv(get_data_dir().joinpath("train_data_tags.csv"))
-        
-        self.num_classes = len(train_data_tags["modeordenc"].unique())
+        self.num_classes = get_num_clases()
 
         self.fc_layers =\
             nn.Sequential(nn.Linear(4096, 128),
